@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set_cron_jobs()
+{
+  echo "#!/bin/sh"
+  echo 'cd ${CFSSL_CERT_PATH}'
+  while [[ ${#} -gt 0 ]]; do
+    echo "su pki -c \"exec /usr/local/bin/pki_renew_cert ${1}\""
+    shift
+  done
+}
+
+set_cron_jobs ${@} > /etc/periodic/daily/renew_certs
+exec crond -f

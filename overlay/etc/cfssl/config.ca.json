@@ -1,0 +1,45 @@
+{
+  "signing": {
+    "profiles": {
+      "ca": {
+        "auth_key": "ca-auth",
+        "expiry": "8760h",
+        "usages": [
+          "digital signature",
+          "crl sign",
+          "cert sign"
+        ],
+        "ca_constraint": {
+          "is_ca": true,
+          "max_path_len": 0,
+          "max_path_len_zero": true
+        }
+      },
+      "client_cert": {
+        "auth_key": "ca-auth",
+        "expiry": "730h",
+        "usages": [
+          "digital signature",
+          "key encipherment",
+          "client auth",
+          "email protection"
+        ]
+      },
+      "server_cert": {
+        "auth_key": "ca-auth",
+        "expiry": "730h",
+        "usages": [
+          "digital signature",
+          "key encipherment",
+          "server auth"
+        ]
+      }
+    }
+  },
+  "auth_keys": {
+    "ca-auth": {
+      "type": "standard",
+      "key": "env:AUTH_KEY"
+    }
+  }
+}

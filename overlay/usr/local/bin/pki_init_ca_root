@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e
+
+ca_name="${1}"
+csr_json_name="${2:--}"
+
+cfssl gencert \
+  -initca ${csr_json_name} \
+  |cfssljson -bare ${ca_name}
+
+openssl x509 -noout -text -in "${ca_name}.pem"
+

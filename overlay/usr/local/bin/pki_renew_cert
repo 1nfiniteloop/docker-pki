@@ -1,0 +1,40 @@
+#!/bin/sh
+
+set -e
+
+base_name="${1}"
+
+renew_cert_if_expired()
+{
+  local cert="${base_name}.pem"
+  local csr="${base_name}.csr"
+  if ! cert_is_valid "${cert}"; then
+    sign_csr "${csr}"
+    echo "$(date): certificate: ${base_name} renewed"
+  fi
+}
+
+cert_is_valid()
+{
+  local cert="${1}"
+  local expires_in_today=$((60*60*24))  # in seconds
+  if [[ -e "${cert}" ]]; then
+    openssl x509 -checkend ${expires_in_today} -in "${cert}" > /dev/null
+  else
+    return 1
+  fi
+}
+
+sign_csr()
+{
+  local csr="${1}"
+  cfssl sign \
+    -config ${CFSSL_CONFIG_REQ} \
+    -profile "${CFSSL_CA_SIGNING_PROFILE}" \
+    -remote ${CFSSL_CA_REMOTE} \
+    "${csr}" \
+    |cfssljson -bare ${base_name}
+}
+
+renew_cert_if_expired
+

@@ -1,0 +1,19 @@
+{
+  "signing": {
+    "default": {
+      "auth_remote": {
+        "auth_key": "ca-auth",
+        "remote": "ca"
+      }
+    }
+  },
+  "auth_keys": {
+    "ca-auth": {
+      "type": "standard",
+      "key": "env:AUTH_KEY"
+    }
+  },
+  "remotes": {
+    "ca": "ca"
+  }
+}

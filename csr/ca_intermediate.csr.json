@@ -1,0 +1,14 @@
+{
+  "CN": "Local Area Network Intermediate CA",
+  "names": [
+    {
+      "C": "SE",
+      "L": "Goteborg",
+      "O": "Local Area Network",
+      "OU": "Local Area Network Certificate Authority"
+    }
+  ],
+  "key": {
+    "algo": "ecdsa"
+  }
+}

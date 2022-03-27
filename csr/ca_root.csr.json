@@ -1,0 +1,24 @@
+{
+  "CN": "Local Area Network Root CA",
+  "names": [
+    {
+      "C": "SE",
+      "L": "Goteborg",
+      "O": "Local Area Network",
+      "OU": "Local Area Network Certificate Authority"
+    }
+  ],
+  "key": {
+    "algo": "ecdsa"
+  },
+  "ca": {
+    "expiry": "17520h",
+    "usages": [
+      "crl sign",
+      "cert sign"
+    ],
+    "ca_constraint": {
+      "is_ca": true
+    }
+  }
+}

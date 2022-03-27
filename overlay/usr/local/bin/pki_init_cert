@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -e
+
+cert_name="${1}"
+csr_json_name="${2:--}"
+
+cfssl genkey \
+  ${csr_json_name} \
+  |cfssljson -bare ${cert_name}
+
+cfssl sign \
+  -config ${CFSSL_CONFIG_REQ} \
+  -profile ${CFSSL_CA_SIGNING_PROFILE} \
+  -remote ${CFSSL_CA_REMOTE} \
+  ${cert_name}.csr \
+  |cfssljson -bare ${cert_name}
+
+cfssl info -remote ${CFSSL_CA_REMOTE} \
+  |cfssljson -bare ca_cert
+
+openssl x509 -noout -text -in "${cert_name}.pem"

@@ -1,0 +1,10 @@
+#!/bin/sh
+
+ca_name="${1}"
+
+exec cfssl serve \
+  -config ${CFSSL_CONFIG_CA} \
+  -address 0.0.0.0 \
+  -ca ${ca_name}.pem \
+  -ca-key ${ca_name}-key.pem \
+  -disable sign,init_ca
