@@ -11,4 +11,4 @@ set_cron_jobs()
 }
 
 set_cron_jobs ${@} > /etc/periodic/daily/renew_certs
-exec crond -f
+exec crond -f -d 8
