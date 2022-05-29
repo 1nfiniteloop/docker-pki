@@ -1,0 +1,47 @@
+version: "3.2"
+services:
+
+  # intermediate ca service to provision new certificates.
+  ca:
+    image: 1nfiniteloop/pki
+    domainname: "lan"
+    hostname: "pki_ca"
+    container_name: "pki_ca"
+    environment:
+      AUTH_KEY: "000102030405060708090a0b0c0d0e0f" # hexdump -n 16 -e '4/4 "%08X" 1 "\n"' /dev/urandom
+    networks:
+      pki:
+    volumes:
+      - type: volume
+        source: ca_intermediate
+        target: /var/lib/cfssl
+    command: pki_serve_ca ca_intermediate
+
+  # http server to make root certificate available for installation, example:
+  # $ curl -o /usr/local/share/ca-certificates/ca_cert.crt \
+  #     http://<pki_ca_cert>/ca_cert.pem
+  # $ update-ca-certificates
+  ca_cert:
+    image: 1nfiniteloop/pki
+    domainname: "lan"
+    hostname: "pki_ca_cert"
+    container_name: "pki_ca_cert"
+    user: root
+    networks:
+      lan:
+      pki:
+    volumes:
+      - type: volume
+        source: ca_intermediate
+        target: /var/lib/cfssl
+        read_only: true
+    command: mini_httpd -D -C /etc/mini_httpd/mini_httpd.conf
+
+networks:
+  lan:
+    external: true
+  pki:
+    external: true
+
+volumes:
+  ca_intermediate:

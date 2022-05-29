@@ -16,7 +16,7 @@ below.
 
 ### Create root ca
 
-Store files generated below for root ca offline and in a secure place.
+Store files generated below offline and in a secure place.
 
 Create csr for root ca. Example can be found in folder [csr/](csr/):
 
@@ -73,6 +73,10 @@ prefixed with `ca_intermediate`:
 
 Start intermediate ca service:
 
+    docker-compose up -d
+
+Or manually:
+
     docker run \
       --rm \
       --network pki \
@@ -81,7 +85,7 @@ Start intermediate ca service:
       --env AUTH_KEY="000102030405060708090a0b0c0d0e0f" \
       1nfiniteloop/pki pki_serve_ca ca_intermediate
 
-Edit csr for intermediate ca, example can be found in folder [csr/](csr/):
+Edit csr for server, example can be found in folder [csr/](csr/):
 
     vi csr/server.lan.csr.json
 
@@ -97,13 +101,13 @@ Init pki server cert:
       --env CFSSL_CA_REMOTE=ca_intermediate \
       1nfiniteloop/pki pki_init_cert server.lan
 
-Start pki cron service to renew certificate when expire. Argument to `pki_cron`
-is the name(s) of the certificates to be checked and renewed:
+Start pki cron service to renew certificate when expired. Argument to `pki_cron`
+is the name(s) of the certificates to be checked daily and renewed:
 
     docker run \
       --rm \
       --network pki \
-      --name pki-cert \
+      --name pki-cron \
       --user root \
       --volume pki_certs:/var/lib/cfssl \
       --env CFSSL_CA_SIGNING_PROFILE=server_cert \
@@ -111,12 +115,41 @@ is the name(s) of the certificates to be checked and renewed:
       --env AUTH_KEY="000102030405060708090a0b0c0d0e0f" \
       1nfiniteloop/pki pki_cron server.lan
 
-If the volume is shared with another container that uses the certificate it
-might require uid/gid of user "pki" to be adjusted:
+### Certificate usage
 
-    docker exec -u root -it pki-cert usermod --uid 300 pki
-    docker exec -u root -it pki-cert groupmod --gid 300 pki
-    docker exec -u root -it pki-cert chown -R pki:pki ${CFSSL_CERT_PATH}
+Servers:
+
+To allow other services to read the certificates it is recommended that
+the user of the running the service add itself to group "pki" with gid 500.
+It is also necessary to allow group "pki" to read the private key:
+
+    docker run \
+      --rm \
+      --volume pki_certs:/var/lib/cfssl \
+      1nfiniteloop/pki
+      chmod g+r server.lan-key.pem
+
+Clients:
+
+All hosts that interacts with the tls certifcates needs the root ca certificate
+installed, else tls connections will fail with "certificate verify failed (self
+signed certificate in certificate chain)". To automate the root certificate
+provisioning, serve root certificate over http with:
+
+    docker run \
+      --rm \
+      -it \
+      --name pki-ca-cert \
+      -u root \
+      --volume ca_intermediate:/var/lib/cfssl:ro \
+      1nfiniteloop/pki mini_httpd -D -C /etc/mini_httpd/mini_httpd.conf
+
+Then download and install root certificate on each hosts that interacts with the
+tls certificates:
+
+    curl -o /usr/local/share/ca-certificates/ca_cert.crt \
+      http://<pki-ca-cert>/ca_cert.pem
+    update-ca-certificates
 
 ## Inspect
 
@@ -140,7 +173,7 @@ Verify intermediate certificate:
 
 Verify server/client certificates:
 
-    openssl verify -CAfile ca_intermediate-bundle.pem server.lan.pem
+    openssl verify -CAfile ca_intermediate-ca-chain.pem server.lan.pem
 
 ## Reference
 

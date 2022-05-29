@@ -5,6 +5,7 @@ RUN echo "@edge-testing https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /
 RUN apk update \
   && apk add --no-cache \
     cfssl@edge-testing \
+    mini_httpd \
     openssl \
     shadow \
   && rm -r /var/cache/apk/*
